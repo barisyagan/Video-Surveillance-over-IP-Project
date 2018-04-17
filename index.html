@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <title>JSMpeg Stream Client</title>
+        <style type="text/css">
+                html, body {
+                        background-color: dimgrey;
+                        text-align: center;
+                }
+
+        .descriptionStyle {
+            color: red;
+            font-size: 120%;
+        }
+
+        .button {
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .green {
+            background-color: green;
+        }
+
+        .orange {
+            background-color: orange;
+        }
+
+        .blue {
+            background-color: skyblue;
+        }
+        </style>
+
+</head>
+<body>
+        <canvas id="video-canvas"></canvas>
+
+        <script type="text/javascript" src="jsmpeg.min.js"></script>
+
+
+        <script type="text/javascript">
+                var canvas = document.getElementById('video-canvas');
+                var url = 'ws://35.158.125.29:8082/';
+                var player = new JSMpeg.Player(url, {canvas: canvas});
+
+        var intervalID = window.setInterval(updateTime, 1);
+
+        function updateTime() {
+          document.getElementById("time").innerHTML = "Time: " + player.getCurrentTime().toFixed(2);
+        }
+
+        function playVideo() {
+            player.play();
+        }
+
+        function pauseVideo() {
+            player.pause();
+        }
+
+        function stopVideo() {
+            player.stop();
+        }
+
+        function seekTime() {
+            player.setCurrentTime(player.getCurrentTime() - 1);
+
+        }
+
+        function readCounterFile()
+        {
+            var file = new XMLHttpRequest();
+            var counter = 0;
+            file.open("GET", "counter.txt", false);
+            file.onreadystatechange = function ()
+            {
+                if(file.readyState === 4)
+                {
+                    if(file.status === 200 || file.status == 0)
+                    {
+                        counter = file.responseText;
+                    }
+                }
+            }
+            file.send(null);
+
+            return counter;
+        }
+
+        function takeScreenshot() {
+            var canvas = document.getElementById('video-canvas');
+            var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+            window.location.href=image;
+        }
+
+        function showRecording() {
+            player.destroy();
+            var counter = readCounterFile();
+            var randomIndex = Math.floor((Math.random() * counter));
+            player = new JSMpeg.Player("http://35.158.125.29/videos/video" + randomIndex  + ".ts", {canvas: canvas});
+            document.getElementById('status').innerHTML = "Recording no: " + randomIndex;
+            player.play();
+         }
+
+
+        </script>
+
+    <p class="descriptionStyle" id="status">Live Streaming</p>
+    <p class="descriptionStyle" id="time">Time: </p>
+
+    <button class="button green" onclick="playVideo()">Play</button>
+    <button class="button orange" onclick="pauseVideo()">Pause</button>
+    <button class="button red" onclick="stopVideo()">Stop</button>
+    <button class="button blue" onclick="seekTime()">Seek</button>
+
+    <button class="button blue" onclick="showRecording()">Show Random Recording</button>
+    <button class="button orange" onclick="takeScreenshot()">Screenshot</button>
+
+</body>
+</html>
